@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 import os
 import argparse
-
+import pdb
 
 def calibrate(dirpath, square_size, width, height, visualize=False):
     """ Apply camera calibration operation for images in the given directory path. """
@@ -29,25 +29,32 @@ def calibrate(dirpath, square_size, width, height, visualize=False):
 
     for fname in images:
         img = cv2.imread(os.path.join(dirpath, fname))
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        # Find the chess board corners
-        ret, corners = cv2.findChessboardCorners(gray, (width, height), None)
+        try:
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # Find the chess board corners
+            ret, corners = cv2.findChessboardCorners(gray, (width, height), None)
 
-        # If found, add object points, image points (after refining them)
-        if ret:
-            objpoints.append(objp)
+            # If found, add object points, image points (after refining them)
+            if ret:
+                objpoints.append(objp)
 
-            corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-            imgpoints.append(corners2)
+                corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+                imgpoints.append(corners2)
 
-            # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, (width, height), corners2, ret)
+                # Draw and display the corners
+                img = cv2.drawChessboardCorners(img, (width, height), corners2, ret)
 
-        if visualize:
-            cv2.imshow('img',img)
-            cv2.waitKey(0)
+            if visualize:
+                cv2.imshow('img',img)
+                cv2.waitKey(0)
 
+
+        except:
+            # pdb.set_trace()
+            pass
+
+    pdb.set_trace()
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 

@@ -10,7 +10,7 @@ import sys
 from utils import ARUCO_DICT
 import argparse
 import time
-
+import pdb
 
 def pose_esitmation(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients):
 
@@ -35,16 +35,20 @@ def pose_esitmation(frame, aruco_dict_type, matrix_coefficients, distortion_coef
         # If markers are detected
     if len(corners) > 0:
         for i in range(0, len(ids)):
+            # print(ids[i])
             # Estimate pose of each marker and return the values rvec and tvec---(different from those of camera coefficients)
-            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], 0.02, matrix_coefficients,
-                                                                       distortion_coefficients)
+            rvec, tvec, markerPoints = cv2.aruco.estimatePoseSingleMarkers(corners[i], 0.02, matrix_coefficients,distortion_coefficients)
+            # pdb.set_trace()
+            # R = cv2.Rodrigues(rvec)[0]
+            # print(tvec)
+
             # Draw a square around the markers
             cv2.aruco.drawDetectedMarkers(frame, corners) 
 
             # Draw Axis
             cv2.aruco.drawAxis(frame, matrix_coefficients, distortion_coefficients, rvec, tvec, 0.01)  
 
-    return frame
+    return frame, rvec, tvec
 
 if __name__ == '__main__':
 
