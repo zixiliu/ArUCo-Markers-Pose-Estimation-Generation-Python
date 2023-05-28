@@ -14,17 +14,20 @@ from pose_estimation import pose_esitmation
 import pdb
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--camera", default="False", help="Set to True if using webcam")
-ap.add_argument("-v", "--video", default = '/mnt/h/My Drive/BioRobotics/Hand/Intrinsic Sensing/Data/2022-11-15/cam_in_hand_4.mkv', help="Path to the video file")
+ap.add_argument("-i", "--camera", default="False", required=False, help="Set to True if using webcam")
+# ap.add_argument("-v", "--video", default = '/mnt/h/My Drive/BioRobotics/Hand/Intrinsic Sensing/Data/2022-11-15/cam_in_hand_4.mkv', help="Path to the video file")
+ap.add_argument("-v", "--video", default = '/home/zixiliu/catkin_ws/data/test.avi', help="Path to the video file")
 ap.add_argument("-k", "--K_Matrix", default="calibration_matrix.npy", required=False, help="Path to calibration matrix (numpy file)")
 ap.add_argument("-d", "--D_Coeff", default="distortion_coefficients.npy", required=False, help="Path to distortion coefficients (numpy file)")
 ap.add_argument("-t", "--type", type=str, default="DICT_5X5_100", help="Type of ArUCo tag to detect")
+ap.add_argument("-f", "--filename", type=str, default='/home/zixiliu/catkin_ws/data/test.csv', help="Type of ArUCo tag to detect")
 args = vars(ap.parse_args())
 
 
 
-f = open('/mnt/h/My Drive/BioRobotics/Hand/Intrinsic Sensing/Data/2022-11-15/aruco_pose_in_hand_4.csv','w')
-f.write('time[s], rvec0, rvec1, rvec2, tvec0, tvec1, tvec2\n')
+# f = open('/mnt/h/My Drive/BioRobotics/Hand/Intrinsic Sensing/Data/2022-11-15/aruco_pose_in_hand_4.csv','w')
+f = open(args["filename"],'w')
+f.write('time[s],markerID,rvec0,rvec1,rvec2,tvec0,tvec1,tvec2\n')
 
 if args["camera"].lower() == "true":
 	video = cv2.VideoCapture(0)
@@ -60,15 +63,34 @@ while True:
 		break
 
 	time_stamp = video.get(cv2.CAP_PROP_POS_MSEC)
-	output, rvec, tvec = pose_esitmation(frame, aruco_dict_type, k, d)
-	cv2.imshow("Image", output)
 
-		
-	revc_string = ','.join(['%.8f' % num for num in rvec[0,0,:]])
-	tevc_string = ','.join(['%.8f' % num for num in tvec[0,0,:]])
+	if args["video"]:
+		h, w, _ = frame.shape
 
-	line = str(time_stamp/1000)+','+revc_string+','+tevc_string+'\n'
-	f.write(line)
+		width=1000
+		height = int(width*(h/w))
+		frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
+
+	try:
+		frame, rvecs, tvecs, ids = pose_esitmation(frame, aruco_dict_type, k, d)
+		# pdb.set_trace()
+	except: 
+		if args["video"]:
+			pass
+		else:
+			break
+	cv2.imshow("Image", frame)
+	
+	if (args["camera"].lower()== 'false'):
+		for i in range(len(ids)):
+			rvec = rvecs[i]
+			tvec = tvecs[i]
+			revc_string = ','.join(['%.8f' % num for num in rvec[0,0,:]])
+			tevc_string = ','.join(['%.8f' % num for num in tvec[0,0,:]])
+
+			# pdb.set_trace()
+			line = str(time_stamp/1000)+','+str(ids[i][0])+','+revc_string+','+tevc_string+'\n'
+			f.write(line)
 
 	key = cv2.waitKey(1) & 0xFF
 	if key == ord("q"):

@@ -27,6 +27,7 @@ def calibrate(dirpath, square_size, width, height, visualize=False):
 
     images = os.listdir(dirpath)
 
+    # pdb.set_trace()
     for fname in images:
         img = cv2.imread(os.path.join(dirpath, fname))
 
@@ -51,10 +52,10 @@ def calibrate(dirpath, square_size, width, height, visualize=False):
 
 
         except:
-            # pdb.set_trace()
+            pdb.set_trace()
             pass
 
-    pdb.set_trace()
+    # pdb.set_trace()
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
